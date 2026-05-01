@@ -158,75 +158,101 @@ curl "http://localhost:8080/api/books/author/James%20Patterson"
 
 ---
 
+## 📦 Database Configuration
+
+### Project 1: H2 (Embedded)
+```properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.h2.console.enabled=true
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+### Project 2: MySQL
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/bookstore_db
+spring.datasource.username=root
+spring.datasource.password=password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.hibernate.ddl-auto=update
+```
+
+**Setup MySQL:**
+```bash
+# Create database
+mysql -u root -p
+> CREATE DATABASE bookstore_db;
+> EXIT;
+```
+
+---
+
 ## 📦 Dependencies
 
-### Core Dependencies (pom.xml)
+### Project 1 (pom.xml)
 ```xml
-<!-- Spring Boot Starters -->
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-web</artifactId>
 </dependency>
-
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-jpa</artifactId>
 </dependency>
-
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-thymeleaf</artifactId>
-</dependency>
-
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-security</artifactId>
-</dependency>
-
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-validation</artifactId>
 </dependency>
-
-<!-- Database -->
 <dependency>
-    <groupId>com.mysql</groupId>
-    <artifactId>mysql-connector-java</artifactId>
-    <version>8.0.33</version>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
 </dependency>
-
-<!-- Lombok for reducing boilerplate -->
 <dependency>
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
     <optional>true</optional>
 </dependency>
+```
 
-<!-- JWT for Authentication (Optional) -->
+### Project 2 (pom.xml)
+```xml
 <dependency>
-    <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt</artifactId>
-    <version>0.11.5</version>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
 </dependency>
-
-<!-- Bootstrap for Frontend -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-crypto</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <optional>true</optional>
+</dependency>
 <dependency>
     <groupId>org.webjars</groupId>
     <artifactId>bootstrap</artifactId>
     <version>5.3.0</version>
-</dependency>
-
-<!-- Testing -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-test</artifactId>
-    <scope>test</scope>
-</dependency>
-
-<dependency>
-    <groupId>org.springframework.security</groupId>
-    <artifactId>spring-security-test</artifactId>
-    <scope>test</scope>
 </dependency>
 ```
 
@@ -234,7 +260,29 @@ curl "http://localhost:8080/api/books/author/James%20Patterson"
 
 ## 🔧 Configuration Files
 
-### application.properties
+### Project 1: application.properties
+```properties
+spring.application.name=order-management-basic
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+server.port=8080
+logging.level.root=WARN
+logging.level.com.order=DEBUG
+logging.level.org.springframework.web=INFO
+```
+
+### Project 2: application.properties
 ```properties
 spring.application.name=online-book-store
 spring.datasource.url=jdbc:mysql://localhost:3306/bookstore_db
@@ -244,119 +292,138 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.format_sql=true
 
+spring.thymeleaf.enabled=true
+spring.thymeleaf.prefix=/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.cache=false
+
 server.port=8080
+server.servlet.session.timeout=30m
 
 logging.level.root=WARN
 logging.level.com.bookstore=DEBUG
-
-# Thymeleaf Configuration
-spring.thymeleaf.enabled=true
-spring.thymeleaf.prefix=classpath:/templates/
-spring.thymeleaf.suffix=.html
-
-# Session Configuration
-server.servlet.session.timeout=30m
-```
-
-### application.yml (Alternative)
-```yaml
-spring:
-  application:
-    name: online-book-store
-  datasource:
-    url: jdbc:mysql://localhost:3306/bookstore_db
-    username: root
-    password: password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  thymeleaf:
-    enabled: true
-    prefix: classpath:/templates/
-    suffix: .html
-
-server:
-  port: 8080
-  servlet:
-    session:
-      timeout: 30m
-
-logging:
-  level:
-    root: WARN
-    com.bookstore: DEBUG
+logging.level.org.springframework.web=INFO
 ```
 
 ---
 
 ## 📝 File Naming Convention
 
-All book-store-related files follow this pattern:
-- Entities: `book-store-{entity-name}.java` 
-- Controllers: `book-store-{resource}-controller.java`
-- Services: `book-store-{resource}-service.java`
-- Repositories: `book-store-{resource}-repository.java`
-- DTOs: `book-store-{entity-name}-dto.java`
-- Tests: `book-store-{resource}-test.java`
-- Config: `book-store-{config-name}.java`
+**Project 1:** All files prefixed with `order-`
+- `order-entity.java` - JPA entity
+- `order-repository.java` - Data access
+- `order-service.java` - Business logic
+- `order-controller.java` - REST endpoints
+- `order-management-application.java` - Entry point
 
-Example:
-- `book-store-user-entity.java` → UserEntity.java
-- `book-store-book-controller.java` → BookController.java
-- `book-store-book-service.java` → BookService.java
-
----
-
-## 🛠️ Development Tips
-
-### For IntelliJ Users:
-1. **Copy-Paste Code**: All code is formatted for direct paste into IntelliJ
-2. **Auto-Format**: Use `Ctrl+Alt+L` to auto-format after pasting
-3. **Create Classes**: Right-click package → New → Java Class
-4. **Run Application**: Shift+F10 or Green Run button
-5. **Debug**: F9 to run with debugger
-
-### Common Issues & Solutions
-
-| Issue | Solution |
-|-------|----------|
-| Port already in use | Change port in `application.properties` |
-| Lombok not working | Enable Annotation Processing: Settings → Compiler → Annotation Processors → Enable |
-| H2 Console not showing | Add `spring.h2.console.enabled=true` |
-| 404 errors on GET | Check @RestController and @RequestMapping annotations |
-| Database not persisting | H2 in-memory resets on restart. Use MySQL for persistence |
+**Project 2:** All files prefixed with `book-store-`
+- `book-store-user-entity.java` - User entity
+- `book-store-book-entity.java` - Book entity
+- `book-store-user-service.java` - User logic
+- `book-store-book-service.java` - Book logic
+- `book-store-home-controller.java` - Home page
+- `book-store-auth-controller.java` - Login/Register
+- `book-store-catalog-controller.java` - Book catalog
 
 ---
 
-## 📚 Resources
+## ⚙️ IntelliJ Copy-Paste Setup
 
-- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
-- [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
-- [REST API Best Practices](https://restfulapi.net/)
-- [HTTP Status Codes](https://httpwg.org/specs/rfc7231.html#status.codes)
+1. **Create New Maven Project**
+   - File → New Project → Maven
+   - GroupId: `com.order` or `com.bookstore`
+   - Java: 11
+
+2. **Copy Files**
+   - Create package: `src/main/java/com/order/` or `src/main/java/com/bookstore/`
+   - Copy all `.java` files from respective project folder
+   - Copy `application.properties` to `src/main/resources/`
+   - Copy `pom.xml` to project root
+
+3. **Setup Build**
+   - Right-click `pom.xml` → Maven → Reload Projects
+   - Wait for dependencies to download
+
+4. **Run Application**
+   - Click Run or use: `mvn spring-boot:run`
+   - Application starts on `http://localhost:8080`
 
 ---
 
-## 📞 Support
+## 🐛 Troubleshooting
 
-For issues or questions:
-1. Check the configuration files
-2. Verify database connectivity
-3. Review application logs
-4. Check API endpoint URLs and methods
-5. Validate JSON request payloads
+### Port Already in Use
+```bash
+# Change in application.properties
+server.port=8081
+```
+
+### MySQL Connection Error
+```bash
+# Check MySQL is running
+mysql -u root -p
+# Enter password
+# Type: CREATE DATABASE bookstore_db;
+```
+
+### H2 Console Access (Project 1)
+- URL: `http://localhost:8080/h2-console`
+- JDBC URL: `jdbc:h2:mem:testdb`
+- Username: `sa`
+- Password: (leave blank)
+
+### Template Not Found (Project 2)
+- Create folder: `src/main/resources/templates/`
+- Place `.html` files in this folder
+- Restart application
 
 ---
 
-**Last Updated**: May 2026
-**Version**: 1.0
-**Created for**: Spring Boot Order Management
+## ✅ What's Included
+
+✅ **Project 1:**
+- 11 REST API endpoints for CRUD operations
+- H2 embedded database (no setup needed)
+- Comprehensive Order entity with validations
+- Custom repository queries
+- Service layer with business logic
+- Error handling in controller
+
+✅ **Project 2:**
+- 4 page views (Home, Login, Register, Catalog)
+- User registration with password encoding
+- Book catalog with search & filters
+- MySQL database integration
+- Thymeleaf templating ready
+- Bootstrap CSS via WebJars
+
+---
+
+## 📚 Entity Details
+
+### Order Entity (Project 1)
+- id, orderNumber (unique), customerId, customerName
+- totalAmount, status, shippingAddress, notes
+- createdAt, updatedAt (auto-managed)
+
+### User Entity (Project 2)
+- id, username (unique), email (unique), password
+- firstName, lastName, phoneNumber, address, city
+- enabled, role, createdAt, updatedAt
+
+### Book Entity (Project 2)
+- id, title, author, isbn (unique), description
+- category, price, stockQuantity, publisher
+- publishedDate, rating, reviewCount, imageUrl
+- createdAt, updatedAt
+
+---
+
+## 🚀 Ready to Use!
+
+Both projects are complete and ready for IntelliJ copy-paste. No additional setup needed beyond creating a Maven project and copying the files.
+
+Happy coding! 💻
